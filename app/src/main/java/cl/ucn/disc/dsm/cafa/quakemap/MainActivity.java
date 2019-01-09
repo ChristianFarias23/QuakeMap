@@ -5,9 +5,12 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,10 +37,29 @@ public class MainActivity extends AppCompatActivity {
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
-        // ...
+        // Configurar mapa:
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        //map.getController().animateTo();
+        map.getController().setZoom(16);
+
+
+        // Punto por defecto: UCN.
+        GeoPoint initialPoint = new GeoPoint(-23.6812, -70.4102, 16);
+        map.getController().setCenter(initialPoint);
+
+
+        // Marcador de ejemplo:
+        Marker initialMarker = new Marker(map);
+        initialMarker.setTitle("Este es un Titulo");
+        initialMarker.setSnippet("Este es un Snippet");
+        initialMarker.setSubDescription("Esta es una SubDescripcion");
+
+        initialMarker.setPosition(initialPoint);
+        initialMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+        // Anadir marcador al mapa.
+        map.getOverlays().add(initialMarker);
+
     }
 
     public void onResume(){
