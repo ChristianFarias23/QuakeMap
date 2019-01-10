@@ -1,9 +1,11 @@
 package cl.ucn.disc.dsm.cafa.quakemap;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
@@ -11,6 +13,12 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+
+import java.util.Date;
+import java.util.List;
+
+import cl.ucn.disc.dsm.cafa.quakemap.controllers.EarthquakeCatalogController;
+import cl.ucn.disc.dsm.cafa.quakemap.models.EarthquakeData;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,6 +70,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        downloadData();
+    }
+
+    private void downloadData()
+    {
+        AsyncTask.execute(() -> {
+
+            Log.d("TAG", "-------------------");
+            Log.d("TAG", "Descargando informacion...");
+            Log.d("TAG", "-------------------");
+
+            List<EarthquakeData> earthquakesData = null;
+
+            try {
+                earthquakesData = EarthquakeCatalogController.getEarthquakeCatalog();
+            } catch (Exception e) {
+                // Ocurrio un error.
+                Log.d("TAG", "ERROR: " + e.getMessage() + "\n" + e.getStackTrace());
+            }
+
+            if (earthquakesData != null) {
+                for (EarthquakeData earthquakeData : earthquakesData) {
+                    Log.d(".", "..............................................");
+                    Log.d("EQ", "Title: "+earthquakeData.properties.title);
+                    Log.d("EQ", "Date: "+new Date(earthquakeData.properties.time));
+                }
+                Log.d(".", "..............................................");
+            }
+        });
+    }
+
     public void onResume(){
         super.onResume();
         //this will refresh the osmdroid configuration on resuming.
@@ -79,4 +123,7 @@ public class MainActivity extends AppCompatActivity {
         //Configuration.getInstance().save(this, prefs);
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
+
+    //earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02
+
 }
