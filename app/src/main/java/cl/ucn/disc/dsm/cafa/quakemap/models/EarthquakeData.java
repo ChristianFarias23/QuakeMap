@@ -14,26 +14,28 @@ public class EarthquakeData {
         @Override
         public String toString() {
             if (this.coordinates != null && !this.coordinates.isEmpty())
-                return "Lat: "+this.coordinates.get(0) + ", Lon: "+this.coordinates.get(1) + ", Alt: " + this.coordinates.get(2);
+                return "Longitud: "+ getLongitude() +
+                        ", Latitud: "+ getLatitude() +
+                        ", Profundidad: " + getDepth() + "km";
             return "No coordinates";
         }
-        public Double getLatitude(){
+
+        public Double getLongitude(){
             if (this.coordinates != null && !this.coordinates.isEmpty())
                 return this.coordinates.get(0);
             return 0.0;
         }
 
-        public Double getLongitude(){
+        public Double getLatitude(){
             if (this.coordinates != null && !this.coordinates.isEmpty())
                 return this.coordinates.get(1);
             return 0.0;
         }
 
-        public Double getAltitude(){
+        public Double getDepth(){
             if (this.coordinates != null && !this.coordinates.isEmpty())
                 return this.coordinates.get(2);
             return 0.0;
         }
-
     }
 }
