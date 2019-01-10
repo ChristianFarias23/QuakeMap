@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(".", "..............................................");
                     Log.d("EQ", "Title: "+earthquakeData.properties.title);
                     Log.d("EQ", "Date: "+new Date(earthquakeData.properties.time));
+                    Log.d("EQ", "Coordinates: " + earthquakeData.geometry.toString());
                 }
                 Log.d(".", "..............................................");
             }
