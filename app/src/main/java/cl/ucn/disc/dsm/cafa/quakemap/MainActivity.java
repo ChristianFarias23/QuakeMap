@@ -17,6 +17,7 @@ import org.osmdroid.util.TileSystem;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.Polyline;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -97,21 +98,33 @@ public class MainActivity extends AppCompatActivity {
 
     private void createMarkers() {
         if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
+            boolean first = true;
             for (EarthquakeData ed : earthquakeDataList) {
-                createEarthquakeMarker(ed);
+
+                Marker marker = createEarthquakeMarker(ed);
+                map.getOverlays().add(marker);
+
+                if (first) {
+                    runOnUiThread(() -> marker.showInfoWindow());
+                    first = false;
+                }
             }
         }
     }
 
-    private void createEarthquakeMarker(EarthquakeData data){
-        Marker marker = new Marker(map);
+        private Marker createEarthquakeMarker(EarthquakeData data){
+        final Marker marker = new Marker(map);
         marker.setTitle(data.properties.title);
         marker.setSnippet(data.geometry.toString());
+        marker.setSubDescription(new Date(data.properties.time).toString());
 
-        GeoPoint point = new GeoPoint(data.geometry.getLatitude(), data.geometry.getLongitude());
+        // Buscar un marcador por el id del EarthquakeData.
+        marker.setId(data.id);
+
+        final GeoPoint point = new GeoPoint(data.geometry.getLatitude(), data.geometry.getLongitude());
         marker.setPosition(point);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        map.getOverlays().add(marker);
+        return marker;
     }
 
     private void downloadData()
@@ -151,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
                     EarthquakeData last = earthquakeDataList.get(0);
 
+                    // Mover hacia el ultimo terremoto...
                     map.getController().animateTo(
                             new GeoPoint(last.geometry.getLatitude(), last.geometry.getLongitude()),
                             8.0,
@@ -162,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 for (EarthquakeData earthquakeData : earthquakesData) {
                     Log.d(".", "..............................................");
                     Log.d("EQ", "Title: "+earthquakeData.properties.title);
-                    Log.d("EQ", "Date: "+new Date(earthquakeData.properties.time));
+                    Log.d("EQ", "Date: "+ new Date(earthquakeData.properties.time));
                     Log.d("EQ", "Coordinates: " + earthquakeData.geometry.toString());
                 }
                 Log.d(".", "..............................................");

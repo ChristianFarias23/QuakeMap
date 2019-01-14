@@ -8,10 +8,12 @@ public class Properties  {
     public Integer tz;
     public String url;
     public String detail;
-    public Object felt;
-    public Object cdi;
-    public Object mmi;
-    public Object alert;
+    public String felt;
+    public String cdi;
+    public String mmi;
+
+    //“green”, “yellow”, “orange”, “red”.
+    public String alert;
     public String status;
     public Integer tsunami;
     public Integer sig;
