@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             List<EarthquakeData> earthquakesData = null;
 
             try {
-                Date d = getCurrentDateDaysAgo(3);
+                Date d = getCurrentDateDaysAgo(60);
                 earthquakesData = EarthquakeCatalogController.getEarthquakeCatalogByStartTime(formatDate(d));
 
             } catch (Exception e) {

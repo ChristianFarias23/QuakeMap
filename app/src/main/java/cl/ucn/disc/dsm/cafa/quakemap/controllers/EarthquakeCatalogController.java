@@ -26,10 +26,12 @@ public class EarthquakeCatalogController {
 
         /**
          * Obtiene un catalogo de terremotos dada una fecha pasada.
+         * El limite de la API es de 20000 resultados. Por temas de rendimiento y estetica,
+         * el limite maximo sera MAX_LIMIT.
          * @param startTime : Fecha desde la que se quiere obtener resultados (anio-mes-dia).
          * @return Call.
          */
-        @GET("query?format=geojson&orderby=time")
+        @GET("query?format=geojson&orderby=time&limit="+MAX_LIMIT)
         Call<List<EarthquakeData>> getCatalogByStartTime(
                 @Query("starttime") String startTime);
 
@@ -79,6 +81,8 @@ public class EarthquakeCatalogController {
 
     //----------------------------------------------------------------------------------------------
 
+    static final int MIN_LIMIT = 10;
+    static final int MAX_LIMIT = 1000;
 
     public static List<EarthquakeData> getEarthquakeCatalogByStartTime(String startTime) throws IOException {
         Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalogByStartTime(startTime);
@@ -90,6 +94,13 @@ public class EarthquakeCatalogController {
     }
 
     public static List<EarthquakeData> getEarthquakeCatalogByLimit(int limit) throws IOException {
+
+        if (limit < MIN_LIMIT)
+            limit = MIN_LIMIT;
+
+        if (limit > MAX_LIMIT)
+            limit = MAX_LIMIT;
+
         Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalogByLimit(limit);
         List<EarthquakeData> earthquakeDataList = earthquakeCatalogCall.execute().body();
 
@@ -97,5 +108,7 @@ public class EarthquakeCatalogController {
 
         return earthquakeDataList;
     }
+
+
 
 }
