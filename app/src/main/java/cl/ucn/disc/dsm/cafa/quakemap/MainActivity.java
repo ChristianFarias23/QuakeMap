@@ -1,6 +1,7 @@
 package cl.ucn.disc.dsm.cafa.quakemap;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,11 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polygon;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -122,7 +127,9 @@ public class MainActivity extends AppCompatActivity {
             List<EarthquakeData> earthquakesData = null;
 
             try {
-                earthquakesData = EarthquakeCatalogController.getEarthquakeCatalog();
+                Date d = getCurrentDateDaysAgo(3);
+                earthquakesData = EarthquakeCatalogController.getEarthquakeCatalogByStartTime(formatDate(d));
+
             } catch (Exception e) {
                 // Ocurrio un error.
                 Log.d("TAG", "ERROR: " + e.getMessage() + "\n" + e.getStackTrace());
@@ -182,5 +189,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02
+
+
+    private Date getCurrentDateDaysAgo(int daysAgo){
+
+        if (Math.signum(daysAgo) == -1)
+            daysAgo*=-1;
+
+        Calendar cal = Calendar.getInstance();
+
+        // Restar la cantidad de meses..
+        cal.add(Calendar.DAY_OF_MONTH, -daysAgo);
+
+        return cal.getTime();
+    }
+
+    private String formatDate(Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(date);
+    }
 
 }

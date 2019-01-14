@@ -24,8 +24,26 @@ public class EarthquakeCatalogController {
      */
     public interface EarthquakeCatalogService {
 
-        @GET("query?format=geojson&starttime=2018-12-1&limit=100&orderby=time-asc")
-        Call<List<EarthquakeData>> getCatalog();
+        /**
+         * Obtiene un catalogo de terremotos dada una fecha pasada.
+         * @param startTime : Fecha desde la que se quiere obtener resultados (anio-mes-dia).
+         * @return Call.
+         */
+        @GET("query?format=geojson&orderby=time")
+        Call<List<EarthquakeData>> getCatalogByStartTime(
+                @Query("starttime") String startTime);
+
+
+        /**
+         * Obtiene un catalogo de terremotos con la cantidad especificada.
+         * @param limit : Cantidad de resultados que se quieren obtener.
+         * @return Call.
+         */
+        @GET("query?format=geojson&orderby=time")
+        Call<List<EarthquakeData>> getCatalogByLimit(
+                @Query("limit") int limit);
+
+
     }
 
     /**
@@ -58,8 +76,21 @@ public class EarthquakeCatalogController {
      */
     private static final EarthquakeCatalogService servicio = retro.create(EarthquakeCatalogService.class);
 
-    public static List<EarthquakeData> getEarthquakeCatalog() throws IOException {
-        Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalog();
+
+    //----------------------------------------------------------------------------------------------
+
+
+    public static List<EarthquakeData> getEarthquakeCatalogByStartTime(String startTime) throws IOException {
+        Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalogByStartTime(startTime);
+        List<EarthquakeData> earthquakeDataList = earthquakeCatalogCall.execute().body();
+
+        Log.d("TAG", "-> SIZE " + earthquakeDataList.size());
+
+        return earthquakeDataList;
+    }
+
+    public static List<EarthquakeData> getEarthquakeCatalogByLimit(int limit) throws IOException {
+        Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalogByLimit(limit);
         List<EarthquakeData> earthquakeDataList = earthquakeCatalogCall.execute().body();
 
         Log.d("TAG", "-> SIZE " + earthquakeDataList.size());
