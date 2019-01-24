@@ -38,16 +38,25 @@ import static cl.ucn.disc.dsm.cafa.quakemap.controllers.EarthquakeCatalogControl
 
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * La cantidad de dias atras que se piensa descargar. (Ver EarthquakeCatalogController).
+     */
     public static final int DEFAULT_DAYS_AGO = 31;
 
-    MapView map;
+    /**
+     * La vista del mapa OSM.
+     */
+    private MapView map;
 
     /**
      * Lista de terremotos obtenida al descargar.
      */
     private List<EarthquakeData> earthquakeDataList;
 
-    GeoPoint initialPoint = new GeoPoint(-23.6812, -70.4102);
+    /**
+     * El punto inicial.
+     */
+    private final GeoPoint initialPoint = new GeoPoint(-23.6812, -70.4102);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,20 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Punto por defecto: UCN.
         map.getController().setCenter(initialPoint);
-
-        /*
-        // Marcador de ejemplo:
-        Marker initialMarker = new Marker(map);
-        initialMarker.setTitle("Este es un Titulo");
-        initialMarker.setSnippet("Este es un Snippet");
-        initialMarker.setSubDescription("Esta es una SubDescripcion");
-
-        initialMarker.setPosition(initialPoint);
-        initialMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-
-        // Anadir marcador al mapa.
-        map.getOverlays().add(initialMarker);
-        */
 
         map.getController().animateTo(
                 initialPoint,
@@ -164,6 +159,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Importante!
+     * Maneja la seleccion de un item. Los filtros son excluyentes,
+     * esto es, no se puede filtrar por fecha y magnitud a la vez.
+     * @param item: El item seleccionado.
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -233,6 +235,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Crea los marcadores de los terremotos que se encuentren entre las magnitudes indicadas por parametro.
+     * @param lower: La magnitud menor.
+     * @param upper: La magnitud mayor.
+     */
     private void createMarkersBetweenMagnitud(int lower, int upper) {
         List<EarthquakeData> betweenEarthquakes = new ArrayList<>();
 
@@ -263,6 +270,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Mueve la pantalla hacia el ultimo terremoto.
+     */
     public void goToTheLastEarthquake(){
         if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
             Toast.makeText(this, "Dirigiendo al ultimo terremoto...", Toast.LENGTH_SHORT).show();
@@ -286,6 +296,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Crea los marcadores de los terremotos que se encuentren entre hoy y la fecha indicada por parametro.
+     * @param longDate: La fecha.
+     */
     public void createMarkersAfterLongDate(long longDate){
         List<EarthquakeData> afterEarthquakes = new ArrayList<>();
 
@@ -319,6 +333,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Crea los marcadores dados los terremotos en la lista indicada por parametro.
+     * @param dataList: La lista de terremotos.
+     */
     public void createMarkers(List<EarthquakeData> dataList){
 
         // Si la lista pasada por parametro tiene elementos...
@@ -341,8 +359,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Crea un marcador en el mapa que representa un terremoto.
+     * @param data: Los datos del terremoto para crear el marcador.
+     * @return
+     */
     private Marker createEarthquakeMarker(EarthquakeData data) {
         final Marker marker = new Marker(map);
+        // Con esto se podia cambiar el icono, pero no queda tiempo.
+        // Los iconos estan en el directorio drawables.
+        //marker.setIcon(getApplicationContext().getResources().getDrawable(R.drawable.ic_eq_green));
         marker.setTitle(data.getProperties().getTitle());
         marker.setSnippet(data.getGeometry().toString());
         marker.setSubDescription(dateToSpanish(new Date(data.getProperties().getTime())));
@@ -355,15 +381,26 @@ public class MainActivity extends AppCompatActivity {
 
     //earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02
 
+    //------------------
 
     private static SimpleDateFormat formatter = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy 'a las' HH:mm:ss", Locale.forLanguageTag("es-ES"));
 
 
+    /**
+     * Formatea la fecha a un string en espaniol.
+     * @param date: La fecha a formatear.
+     * @return
+     */
     private String dateToSpanish(Date date) {
         return formatter.format(date);
     }
 
 
+    /**
+     * Obtiene la fecha actual menos la cantidad de dias indicadas por parametro.
+     * @param daysAgo: La cantidad de dias a restar.
+     * @return
+     */
     private Date getCurrentDateDaysAgo(int daysAgo) {
 
         if (Math.signum(daysAgo) == -1)
