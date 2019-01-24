@@ -81,8 +81,8 @@ public class EarthquakeCatalogController {
 
     //----------------------------------------------------------------------------------------------
 
-    static final int MIN_LIMIT = 10;
-    static final int MAX_LIMIT = 1000;
+    public static final int MIN_LIMIT = 10;
+    public static final int MAX_LIMIT = 1000;
 
     public static List<EarthquakeData> getEarthquakeCatalogByStartTime(String startTime) throws IOException {
         Call<List<EarthquakeData>> earthquakeCatalogCall = servicio.getCatalogByStartTime(startTime);

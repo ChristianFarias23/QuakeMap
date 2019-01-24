@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/item_today"
+        android:title="Ultimas 24 horas"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/item_last_week"
+        android:title="Ultima semana"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/item_last_month"
+        android:title="Ultimo mes"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/item_reload"
+        android:icon="@drawable/ic_refresh_white_30dp"
+        android:title="Ultimo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/item_last_one"
+        android:icon="@drawable/ic_new_white_30dp"
+        android:title="Ultimo"
+        app:showAsAction="always" />
+
+
+</menu>

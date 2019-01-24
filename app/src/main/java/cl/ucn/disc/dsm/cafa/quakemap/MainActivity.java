@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.osmdroid.api.IGeoPoint;
@@ -16,23 +18,33 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import cl.ucn.disc.dsm.cafa.quakemap.controllers.EarthquakeCatalogController;
 import cl.ucn.disc.dsm.cafa.quakemap.models.EarthquakeData;
 
+import static cl.ucn.disc.dsm.cafa.quakemap.controllers.EarthquakeCatalogController.MAX_LIMIT;
+
 public class MainActivity extends AppCompatActivity {
+
+    public static final int DEFAULT_DAYS_AGO = 31;
 
     MapView map;
 
-    List<EarthquakeData> earthquakeDataList;
+    /**
+     * Lista de terremotos obtenida al descargar.
+     */
+    private List<EarthquakeData> earthquakeDataList;
 
     GeoPoint initialPoint = new GeoPoint(-23.6812, -70.4102);
 
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
         map.getController().setZoom(15);
         map.setVerticalMapRepetitionEnabled(false);
-        map.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
+        map.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude, -TileSystem.MaxLatitude, 0);
 
         // Punto por defecto: UCN.
         map.getController().setCenter(initialPoint);
@@ -90,101 +102,43 @@ public class MainActivity extends AppCompatActivity {
         downloadData();
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    private void createMarkers() {
-        if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
-            boolean first = true;
-            for (EarthquakeData ed : earthquakeDataList) {
-
-                Marker marker = createEarthquakeMarker(ed);
-                map.getOverlays().add(marker);
-
-                if (first) {
-                    runOnUiThread(() -> marker.showInfoWindow());
-                    first = false;
-                }
-            }
-        }
-    }
-
-        private Marker createEarthquakeMarker(EarthquakeData data){
-        final Marker marker = new Marker(map);
-        marker.setTitle(data.properties.title);
-        marker.setSnippet(data.geometry.toString());
-        marker.setSubDescription(new Date(data.properties.time).toString());
-
-        // Buscar un marcador por el id del EarthquakeData.
-        marker.setId(data.id);
-
-        final GeoPoint point = new GeoPoint(data.geometry.getLatitude(), data.geometry.getLongitude());
-        marker.setPosition(point);
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        return marker;
-    }
-
-    private void downloadData()
-    {
-        Toast.makeText(this, "Descargando informacion...", Toast.LENGTH_SHORT).show();
+    /**
+     * Metodo que se encarga de obtener todos los terremotos hace DEFAULT_DAYS_AGO dias atras
+     * y guardarlos en la lista earthquakeDataList.
+     */
+    private void downloadData() {
+        Toast.makeText(this, "Descargando datos...", Toast.LENGTH_SHORT).show();
 
         AsyncTask.execute(() -> {
-
-            Log.d("TAG", "-------------------");
-            Log.d("TAG", "Descargando informacion...");
-            Log.d("TAG", "-------------------");
 
             List<EarthquakeData> earthquakesData = null;
 
             try {
-                Date d = getCurrentDateDaysAgo(60);
+                // Obtiene todos los terremotos y los guarda en la lista earthquakesData.
+                Date d = getCurrentDateDaysAgo(DEFAULT_DAYS_AGO);
                 earthquakesData = EarthquakeCatalogController.getEarthquakeCatalogByStartTime(formatDate(d));
 
             } catch (Exception e) {
                 // Ocurrio un error.
                 Log.d("TAG", "ERROR: " + e.getMessage() + "\n" + e.getStackTrace());
 
-                runOnUiThread(()->{
-                    Toast.makeText(this, "Ocurrio un error al descargar la informacion...", Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            if (earthquakesData != null) {
-
-                earthquakeDataList = earthquakesData;
-
-                createMarkers();
-
-                runOnUiThread(()->{
-
-                    Toast.makeText(this, "Dirigiendo al ultimo terremoto...", Toast.LENGTH_SHORT).show();
-
-                    EarthquakeData last = earthquakeDataList.get(0);
-
-                    // Mover hacia el ultimo terremoto...
-                    map.getController().animateTo(
-                            new GeoPoint(last.geometry.getLatitude(), last.geometry.getLongitude()),
-                            8.0,
-                            3000L
-                    );
-                    // pSpeed esta en milisegundos!!!
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Ocurrio un error al descargar los datos...", Toast.LENGTH_SHORT).show();
                 });
 
-                for (EarthquakeData earthquakeData : earthquakesData) {
-                    Log.d(".", "..............................................");
-                    Log.d("EQ", "Title: "+earthquakeData.properties.title);
-                    Log.d("EQ", "Date: "+ new Date(earthquakeData.properties.time));
-                    Log.d("EQ", "Coordinates: " + earthquakeData.geometry.toString());
-                }
-                Log.d(".", "..............................................");
+                return;
             }
+
+            earthquakeDataList = earthquakesData;
+            createMarkers(earthquakeDataList);
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Descarga completa", Toast.LENGTH_SHORT).show();
+            });
         });
     }
 
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
@@ -193,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
     }
 
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
@@ -202,23 +156,157 @@ public class MainActivity extends AppCompatActivity {
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.item_last_one:
+
+                // Ir al ultimo terremoto.
+                goToTheLastEarthquake();
+
+                return true;
+            case R.id.item_today:
+
+                // Ahora - 1 dia = 24 horas atras.
+                long last24Hours = getCurrentDateDaysAgo(1).getTime();
+                createMarkersAfterLongDate(last24Hours);
+
+                return true;
+            case R.id.item_last_week:
+
+                // Ahora - 7 dias = Una semana atras.
+                long lastWeek = getCurrentDateDaysAgo(7).getTime();
+                createMarkersAfterLongDate(lastWeek);
+
+                return true;
+            case R.id.item_last_month:
+
+                // Ahora - 31 dias = Un mes atras.
+                long lastMonth = getCurrentDateDaysAgo(31).getTime();
+                createMarkersAfterLongDate(lastMonth);
+
+                return true;
+
+            default:
+                return true;
+        }
+    }
+
+    public void goToTheLastEarthquake(){
+        if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
+            Toast.makeText(this, "Dirigiendo al ultimo terremoto...", Toast.LENGTH_SHORT).show();
+
+            runOnUiThread(() -> {
+
+                // El primero en la lista sera el mas reciente.
+                EarthquakeData last = earthquakeDataList.get(0);
+
+                // Mover hacia el ultimo terremoto...
+                map.getController().animateTo(
+                        new GeoPoint(last.geometry.getLatitude(), last.geometry.getLongitude()),
+                        8.0,
+                        3000L
+                );
+                // pSpeed esta en milisegundos!!!
+
+            });
+        } else {
+            Toast.makeText(this, "La lista de terremotos se encuentra vacia.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void createMarkersAfterLongDate(long longDate){
+        List<EarthquakeData> afterEarthquakes = new ArrayList<>();
+
+        if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
+            // Mostrar solo los terremotos de hoy.
+            for (EarthquakeData eq : earthquakeDataList) {
+                if (eq.properties.time >= longDate) {
+                    afterEarthquakes.add(eq);
+                }
+            }
+            if (!afterEarthquakes.isEmpty()) {
+                if (afterEarthquakes.size() == MAX_LIMIT) {
+                    Toast.makeText(this,
+                            "Se muestran todos los terremotos disponibles (" + afterEarthquakes.size() + ")",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this,
+                            "Se muestran " + afterEarthquakes.size() + " terremotos para este periodo",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                createMarkers(afterEarthquakes);
+
+            } else {
+                // Uhm??
+                Toast.makeText(this, "No hay terremotos en este periodo.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "La lista de terremotos se encuentra vacia.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public void createMarkers(List<EarthquakeData> dataList){
+
+        // Si la lista pasada por parametro tiene elementos...
+        if (dataList != null && !dataList.isEmpty()) {
+
+            // Vacia los marcadores actuales del mapa.
+            map.getOverlays().clear();
+
+            // y crea nuevos marcadores.
+            for (EarthquakeData ed : dataList) {
+
+                // Crea un marcador con los datos del terremoto.
+                Marker marker = createEarthquakeMarker(ed);
+
+                // Lo agrega al mapa.
+                map.getOverlays().add(marker);
+            }
+
+            map.invalidate();
+        }
+    }
+
+    private Marker createEarthquakeMarker(EarthquakeData data) {
+        final Marker marker = new Marker(map);
+        marker.setTitle(data.properties.title);
+        marker.setSnippet(data.geometry.toString());
+        marker.setSubDescription(new Date(data.properties.time).toString());
+
+        final GeoPoint point = new GeoPoint(data.geometry.getLatitude(), data.geometry.getLongitude());
+        marker.setPosition(point);
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        return marker;
+    }
+
     //earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02
 
 
-    private Date getCurrentDateDaysAgo(int daysAgo){
+    private Date getCurrentDateDaysAgo(int daysAgo) {
 
         if (Math.signum(daysAgo) == -1)
-            daysAgo*=-1;
+            daysAgo *= -1;
 
         Calendar cal = Calendar.getInstance();
 
-        // Restar la cantidad de meses..
+        // Restar la cantidad de dias...
         cal.add(Calendar.DAY_OF_MONTH, -daysAgo);
 
         return cal.getTime();
     }
 
-    private String formatDate(Date date){
+    private String formatDate(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(date);
     }
