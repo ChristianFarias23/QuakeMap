@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import cl.ucn.disc.dsm.cafa.quakemap.controllers.EarthquakeCatalogController;
 import cl.ucn.disc.dsm.cafa.quakemap.models.EarthquakeData;
@@ -173,11 +174,18 @@ public class MainActivity extends AppCompatActivity {
                 goToTheLastEarthquake();
 
                 return true;
-            case R.id.item_today:
+            case R.id.item_last_24_hours:
 
                 // Ahora - 1 dia = 24 horas atras.
                 long last24Hours = getCurrentDateDaysAgo(1).getTime();
                 createMarkersAfterLongDate(last24Hours);
+
+                return true;
+            case R.id.item_last_3_days:
+
+                // 3 dias atras.
+                long last3Days = getCurrentDateDaysAgo(3).getTime();
+                createMarkersAfterLongDate(last3Days);
 
                 return true;
             case R.id.item_last_week:
@@ -187,10 +195,17 @@ public class MainActivity extends AppCompatActivity {
                 createMarkersAfterLongDate(lastWeek);
 
                 return true;
-            case R.id.item_last_month:
+            case R.id.item_last_2_weeks:
 
-                // Ahora - 31 dias = Un mes atras.
-                long lastMonth = getCurrentDateDaysAgo(31).getTime();
+                // 2 semanas atras.
+                long last2Weeks = getCurrentDateDaysAgo(14).getTime();
+                createMarkersAfterLongDate(last2Weeks);
+
+                return true;
+            case R.id.item_all:
+
+                // Todos los disponibles.
+                long lastMonth = getCurrentDateDaysAgo(DEFAULT_DAYS_AGO).getTime();
                 createMarkersAfterLongDate(lastMonth);
 
                 return true;
@@ -206,6 +221,13 @@ public class MainActivity extends AppCompatActivity {
 
                 createMarkersBetweenMagnitud(5,7);
                 return  true;
+            case R.id.item_mag_7:
+                createMarkersBetweenMagnitud(7,10);
+                return  true;
+            case R.id.item_refresh:
+
+                downloadData();
+                return  true;
             default:
                 return true;
         }
@@ -216,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
             for (EarthquakeData eq : earthquakeDataList) {
-                if (eq.properties.mag > lower && eq.properties.mag <= upper) {
+                if (eq.getProperties().getMag() >= lower && eq.getProperties().getMag() < upper) {
                     betweenEarthquakes.add(eq);
                 }
             }
@@ -252,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Mover hacia el ultimo terremoto...
                 map.getController().animateTo(
-                        new GeoPoint(last.geometry.getLatitude(), last.geometry.getLongitude()),
+                        new GeoPoint(last.getGeometry().getLatitude(), last.getGeometry().getLongitude()),
                         8.0,
                         3000L
                 );
@@ -270,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
             // Mostrar solo los terremotos de hoy.
             for (EarthquakeData eq : earthquakeDataList) {
-                if (eq.properties.time >= longDate) {
+                if (eq.getProperties().getTime() >= longDate) {
                     afterEarthquakes.add(eq);
                 }
             }
@@ -321,17 +343,25 @@ public class MainActivity extends AppCompatActivity {
 
     private Marker createEarthquakeMarker(EarthquakeData data) {
         final Marker marker = new Marker(map);
-        marker.setTitle(data.properties.title);
-        marker.setSnippet(data.geometry.toString());
-        marker.setSubDescription(new Date(data.properties.time).toString());
+        marker.setTitle(data.getProperties().getTitle());
+        marker.setSnippet(data.getGeometry().toString());
+        marker.setSubDescription(dateToSpanish(new Date(data.getProperties().getTime())));
 
-        final GeoPoint point = new GeoPoint(data.geometry.getLatitude(), data.geometry.getLongitude());
+        final GeoPoint point = new GeoPoint(data.getGeometry().getLatitude(), data.getGeometry().getLongitude());
         marker.setPosition(point);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         return marker;
     }
 
     //earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02
+
+
+    private static SimpleDateFormat formatter = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy 'a las' HH:mm:ss", Locale.forLanguageTag("es-ES"));
+
+
+    private String dateToSpanish(Date date) {
+        return formatter.format(date);
+    }
 
 
     private Date getCurrentDateDaysAgo(int daysAgo) {

@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/item_reload"
+        android:id="@+id/item_refresh"
         android:icon="@drawable/ic_refresh_white_30dp"
-        android:title="Ultimo"
+        android:title="Actualizar"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/item_last_one"
         android:icon="@drawable/ic_new_white_30dp"
-        android:title="Ultimo"
+        android:title="Ir al mas reciente"
         app:showAsAction="always" />
 
     <item
@@ -20,14 +20,20 @@
         app:showAsAction="never">
         <menu>
             <item
-                android:id="@+id/item_today"
+                android:id="@+id/item_last_24_hours"
                 android:title="Ultimas 24 horas" />
+            <item
+                android:id="@+id/item_last_3_days"
+                android:title="Ultimos 3 dias"/>
             <item
                 android:id="@+id/item_last_week"
                 android:title="Ultima semana"/>
             <item
-                android:id="@+id/item_last_month"
-                android:title="Ultimo mes"/>
+                android:id="@+id/item_last_2_weeks"
+                android:title="Ultimas 2 semanas"/>
+            <item
+                android:id="@+id/item_all"
+                android:title="Todos"/>
         </menu>
     </item>
 
@@ -38,13 +44,16 @@
         <menu>
             <item
                 android:id="@+id/item_mag_3"
-                android:title="Menor a 3.0"/>
+                android:title="Menor o igual a 3.0"/>
             <item
                 android:id="@+id/item_mag_3_5"
-                android:title="Entre 3.0 y 5.0" />
+                android:title="Entre 3.0 y 4.9" />
             <item
                 android:id="@+id/item_mag_5_7"
-                android:title="Entre 5.0 y 7.0" />
+                android:title="Entre 5.0 y 6.9" />
+            <item
+                android:id="@+id/item_mag_7"
+                android:title="Mayores a 7.0" />
         </menu>
     </item>
 

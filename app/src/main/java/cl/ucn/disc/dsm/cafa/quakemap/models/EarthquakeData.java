@@ -2,14 +2,21 @@ package cl.ucn.disc.dsm.cafa.quakemap.models;
 
 import java.util.List;
 
+import lombok.Getter;
+
 public class EarthquakeData {
 
-    public String id;
-    public Properties properties;
-    public Geometry geometry;
+    @Getter
+    private String id;
+
+    @Getter
+    private Properties properties;
+
+    @Getter
+    private Geometry geometry;
 
     public class Geometry{
-        public List<Double> coordinates;
+        List<Double> coordinates;
 
         @Override
         public String toString() {
