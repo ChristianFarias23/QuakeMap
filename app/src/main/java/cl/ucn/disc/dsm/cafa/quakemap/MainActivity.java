@@ -194,9 +194,50 @@ public class MainActivity extends AppCompatActivity {
                 createMarkersAfterLongDate(lastMonth);
 
                 return true;
+            case R.id.item_mag_3:
 
+                createMarkersBetweenMagnitud(0,3);
+                return  true;
+            case R.id.item_mag_3_5:
+
+                createMarkersBetweenMagnitud(3,5);
+                return  true;
+            case R.id.item_mag_5_7:
+
+                createMarkersBetweenMagnitud(5,7);
+                return  true;
             default:
                 return true;
+        }
+    }
+
+    private void createMarkersBetweenMagnitud(int lower, int upper) {
+        List<EarthquakeData> betweenEarthquakes = new ArrayList<>();
+
+        if (earthquakeDataList != null && !earthquakeDataList.isEmpty()) {
+            for (EarthquakeData eq : earthquakeDataList) {
+                if (eq.properties.mag > lower && eq.properties.mag <= upper) {
+                    betweenEarthquakes.add(eq);
+                }
+            }
+            if (!betweenEarthquakes.isEmpty()) {
+                if (betweenEarthquakes.size() == MAX_LIMIT) {
+                    Toast.makeText(this,
+                            "Se muestran todos los terremotos disponibles (" + betweenEarthquakes.size() + ")",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this,
+                            "Se muestran " + betweenEarthquakes.size() + " terremotos entre estas magnitudes",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                createMarkers(betweenEarthquakes);
+
+            } else {
+                Toast.makeText(this, "No hay terremotos entre estas magnitudes.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "La lista de terremotos se encuentra vacia.", Toast.LENGTH_SHORT).show();
         }
     }
 
